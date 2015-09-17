@@ -1,11 +1,7 @@
 import matplotlib.pyplot as plt
 from math import pi
 
-
-#domain_colours = {'orf': '#66FF66',
-#                  'untracked': '#9999FF',
-#                  'promoter': '#FF9999'}
-
+# old colours
 # '#FFE082' sandy
 # '#A1887F' light brown
 # '#ba68c8' medium pastel purple
@@ -134,6 +130,28 @@ def genome_plot_polar(genome, genome_label, time=None, output_path=None, flag_sh
         plt.show()
 
     return fig
+
+
+def plot_states(states, labels_to_plot, datatype="gene"):
+    """
+    Args:
+        states: dictionary of label: state vector
+        labels_to_plot: ordered list that's a subset of the keys from states
+        datatype: either "gene" or "target"
+    """
+    assert datatype in ["gene", "target"]
+    data_labels = states.keys
+
+    fig = plt.figure()
+    for idx, label in enumerate(labels_to_plot):
+        assert label in data_labels
+        state_data = states[label]
+
+    return
+
+
+def plot_states_targets():
+    return
 
 
 if __name__ == '__main__':
