@@ -1,3 +1,4 @@
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from math import pi
 
@@ -17,6 +18,13 @@ domain_colours = {'orf': {True: '#81c784',  # pastel green '#80cbc4'
 target_colours = {'repaired': '#fdfd96',  # pastel yellow
                   'open': 'white',  # just white
                   'inactive': '#fdfd96'}  # pastel yellow
+
+state_colours = {'gene': {'active': 'green',
+                          'deactivated': 'red'},
+                 'target': {'cut': 'blue',
+                            'targetable': 'green',
+                            'untargetable': 'red'}}
+
 
 def genome_plot_polar(genome, genome_label, time=None, output_path=None, flag_show=True):
     # initialize plot
@@ -132,22 +140,74 @@ def genome_plot_polar(genome, genome_label, time=None, output_path=None, flag_sh
     return fig
 
 
-def plot_states(states, labels_to_plot, datatype="gene"):
-    """
+def plot_states(states, labels_to_plot, datatype='gene'):
+    """Plots timeseries of statedata as horizontal coloured bars
     Args:
         states: dictionary of label: state vector
         labels_to_plot: ordered list that's a subset of the keys from states
         datatype: either "gene" or "target"
     """
-    assert datatype in ["gene", "target"]
-    data_labels = states.keys
+    assert datatype in ['gene', 'target']
+    colour_dict = state_colours[datatype]
+    data_labels = states.keys()
+    time = states['time']
+    length_data = len(time)
+    length_labels = len(labels_to_plot)
 
     fig = plt.figure()
-    for idx, label in enumerate(labels_to_plot):
-        assert label in data_labels
+    ax = plt.gca()
+    x0 = time[0]
+    y0 = 0.0
+    dx = time[1] - time[0]
+    dy = dx
+    x = x0
+    y = y0
+    for i, label in enumerate(labels_to_plot):
+        y = y0 + dy*i
         state_data = states[label]
-
+        for j, elem in enumerate(state_data):
+            x = x0 + dx*j
+            ax.add_patch(mpatches.Rectangle((x - dx*0.5, y), width=dx, height=dy*0.5, color=colour_dict[elem], ec='k'))
+    ax.set_xlabel('time')
+    ax.set_ylabel(datatype)
+    ax.set_xticks(time)
+    ax.set_yticks([y0 + (i+0.25)*dy for i in xrange(length_labels)])
+    ax.set_yticklabels(labels_to_plot)
+    ax.set_xlim(x0 - 0.5*dx, (length_data - 1)*dx*1.1)
+    ax.set_ylim(y0 - 0.3*dy, (length_labels)*dy)
+    plt.show()
     return
+
+
+d = {'a': ['active', 'active', 'active', 'deactivated', 'active', 'active', 'active', 'active', 'active', 'deactivated'],
+     'b': ['active', 'deactivated', 'deactivated', 'deactivated', 'active', 'active', 'active', 'active', 'active', 'deactivated'],
+     'c': ['active', 'active', 'active', 'deactivated', 'active', 'active', 'active', 'active', 'active', 'deactivated'],
+     'time': range(10)}
+
+plot_states(d,['a','b','c'])
+plot_states(d,['a','b'])
+plot_states(d,['a'])
+
+"""
+fig, ax = plt.subplots()
+ax.broken_barh([ (110, 30), (150, 10) ] , (10, 9), facecolors='blue')
+ax.broken_barh([ (10, 50), (100, 20),  (130, 10)] , (20, 9),
+                facecolors=('red', 'yellow', 'green'))
+ax.set_ylim(5,35)
+ax.set_xlim(0,200)
+ax.set_xlabel('seconds since start')
+ax.set_yticks([15,25])
+ax.set_yticklabels(['Bill', 'Jim'])
+ax.grid(True)
+ax.annotate('race interrupted', (61, 25),
+            xytext=(0.8, 0.9), textcoords='axes fraction',
+            arrowprops=dict(facecolor='black', shrink=0.05),
+            fontsize=16,
+            horizontalalignment='right', verticalalignment='top')
+
+plt.show()
+"""
+
 
 
 def plot_states_targets():
@@ -156,7 +216,7 @@ def plot_states_targets():
 
 if __name__ == '__main__':
     from init_genome_camv import init_genome_camv, init_targets_all_domains
-    complex_concentration = 135000000000
+    complex_concentration = 22
     dt = 0.1
     pseudo_targets = init_targets_all_domains(complex_concentration)
     genome_camv = init_genome_camv(pseudo_targets)
